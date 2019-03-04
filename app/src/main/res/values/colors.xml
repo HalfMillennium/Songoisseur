@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
+    <color name="colorPrimary">#FF8C00</color>
+    <color name="colorPrimaryDark">#FF8C00</color>
     <color name="colorAccent">#D81B60</color>
+    <color name="offBlack">#313639</color>
+    <color name="cardColor">#3b4145</color>
+    <color name="spotifyGreen">#1db954</color>
+    <color name="mainAppColor">#51008a</color>
+    <color name="lighterPurple">#7d08d1</color>
+    <color name="dimGray">#696969</color>
+    <color name="normGray">#808080</color>
+    <color name="niceOrange">#FF8C00</color>
 </resources>
