@@ -54,15 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "https://github.com/HalfMillennium/Songoisseur";
     private SpotifyAppRemote mSpotifyAppRemote;
 
-    private ImageView albumCover;
-    private TextView currentSong, currentArtist;
-    private ListView recSongs;
-
-    public SpotifyService spotify_service;
-
-    public Map<String, Object> seed_map;
-
-    public ArrayList<Recommendations> allRecs = new ArrayList<>();
+    public static AuthenticationResponse global_auth_response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,89 +85,10 @@ public class MainActivity extends AppCompatActivity {
                 case TOKEN:
                     // Handle successful response
                     Toast.makeText(MainActivity.this, "Attempting to fetch recommendations!", Toast.LENGTH_LONG).show();
-                    SpotifyApi api = new SpotifyApi();
 
-                    api.setAccessToken(response.getAccessToken());
+                    global_auth_response = response;
 
-                    final SpotifyService spotify = api.getService();
-
-                    OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new Interceptor() {
-                        @Override
-                        public Response intercept(Chain chain) throws IOException {
-                            Request newRequest  = chain.request().newBuilder()
-                                    .addHeader("Authorization", "Bearer " + response.getAccessToken())
-                                    .build();
-                            return chain.proceed(newRequest);
-                        }
-                    }).build();
-
-                    Retrofit retrofit = new Retrofit.Builder()
-                            .client(client)
-                            .baseUrl("https://api.spotify.com/")
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .build();
-
-                    SpotifyPlayerApi spotifyPlayerApi = retrofit.create(SpotifyPlayerApi.class);
-
-                    Call<CurrentlyPlaying> call = spotifyPlayerApi.getCurrentlyPlaying();
-                    call.enqueue(new Callback<CurrentlyPlaying>() {
-                        @Override
-                        public void onResponse(Call<CurrentlyPlaying> call, retrofit2.Response<CurrentlyPlaying> response) {
-                            //Toast.makeText(MainActivity.this, "here-toast", Toast.LENGTH_SHORT).show();
-                            if(!response.isSuccessful())
-                            {
-                                // should probably do something here
-                                return;
-                            }
-
-                            setContentView(R.layout.activity_recommend);
-                            currentSong = findViewById(R.id.curr_song);
-                            currentArtist = findViewById(R.id.curr_artist);
-                            albumCover = findViewById(R.id.album_art);
-                            recSongs = findViewById(R.id.recommend_list_view);
-
-                            spotify_service = spotify;
-
-                            final CurrentlyPlaying currentlyPlaying = response.body();
-
-                            try {
-                                currentSong.setText(currentlyPlaying.getItem().getName());
-                                currentArtist.setText(currentlyPlaying.getItem().getArtists().get(0).getName());
-
-                                Glide.with(MainActivity.this).load(currentlyPlaying.getItem().getAlbum().getImages().get(0).getUrl()).into(albumCover);
-
-                                seed_map = new HashMap<String, Object>() {{
-                                    put("seed_tracks", currentlyPlaying.getItem().getId());
-                                }};
-
-                                RelativeLayout current = findViewById(R.id.main_layout);
-
-                                try {
-                                    for (int i = 0; i < 20; i++) {
-                                        String val = new GetRecommendations().execute().get();
-                                    }
-                                } catch (ExecutionException e) {
-                                    e.printStackTrace();
-                                    Log.d("error retrieving recs", e.getMessage());
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                    Log.d("error retrieving recs", e.getMessage());
-                                }
-
-                                RecListAdapter adapter = new RecListAdapter(allRecs, getApplicationContext());
-                                recSongs.setAdapter(adapter);
-
-                            } catch (NullPointerException e) {
-                                setContentView(R.layout.nothing_playing_layout);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<CurrentlyPlaying> call, Throwable t) {
-                            Toast.makeText(MainActivity.this, "Whoops! Something went wrong. Try again in a little bit.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-
+                    startActivity(RecommendActivity.makeIntent(MainActivity.this));
 
                     //List<Tracks> recommendations = spotify.getRecommendations(//).tracks;
                     /** ^ Parameter 'Map' for 'getRecommendations' = String: "seed_track", Object: "TRACK ID" (whatever's currently playing) **/
@@ -190,19 +103,6 @@ public class MainActivity extends AppCompatActivity {
                 default:
                     // Handle other cases
             }
-        }
-    }
-
-    private class GetRecommendations extends AsyncTask<Void, Void, String> {
-        @Override
-        protected String doInBackground(Void... params) {
-            Recommendations recs = spotify_service.getRecommendations(seed_map);
-            if(!allRecs.contains(recs)) {
-                allRecs.add(recs);
-            } else {
-                Log.d(recs.tracks.get(0).name, recs.tracks.get(0).artists.get(0).name);
-            }
-            return "meetog";
         }
     }
 

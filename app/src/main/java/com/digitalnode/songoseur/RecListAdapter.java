@@ -45,31 +45,33 @@ public class RecListAdapter extends ArrayAdapter<Recommendations> {
         // Get the data item for this position
         Recommendations rec = dataSet.get(position);
         List<Track> songs = rec.tracks;
-        Track currTrack = songs.get(position);
+        if (position < songs.size()) {
+            Track currTrack = songs.get(position);
 
-        // Check if an existing view is being reused, otherwise inflate the view
-        ViewHolder viewHolder; // view lookup cache stored in tag
+            // Check if an existing view is being reused, otherwise inflate the view
+            ViewHolder viewHolder; // view lookup cache stored in tag
 
-        if (convertView == null) {
+            if (convertView == null) {
 
-            viewHolder = new ViewHolder();
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.rec_entry_layout, parent, false);
-            viewHolder.songName =  convertView.findViewById(R.id.song_name);
-            viewHolder.artist = convertView.findViewById(R.id.artist);
-            viewHolder.album_art = convertView.findViewById(R.id.album_cover);
+                viewHolder = new ViewHolder();
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                convertView = inflater.inflate(R.layout.rec_entry_layout, parent, false);
+                viewHolder.songName =  convertView.findViewById(R.id.song_name);
+                viewHolder.artist = convertView.findViewById(R.id.artist);
+                viewHolder.album_art = convertView.findViewById(R.id.album_cover);
 
-            convertView.setTag(viewHolder);
+                convertView.setTag(viewHolder);
 
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
+            } else {
+                viewHolder = (ViewHolder) convertView.getTag();
+            }
+
+            lastPosition = position;
+
+            viewHolder.songName.setText(currTrack.name);
+            viewHolder.artist.setText(currTrack.artists.get(0).name);
+            Glide.with(getContext()).load(currTrack.album.images.get(0).url).into(viewHolder.album_art);
         }
-
-        lastPosition = position;
-
-        viewHolder.songName.setText(currTrack.name);
-        viewHolder.artist.setText(currTrack.artists.get(0).name);
-        Glide.with(getContext()).load(currTrack.album.images.get(0).url).into(viewHolder.album_art);
 
         // Return the completed view to render on screen
         return convertView;
