@@ -151,40 +151,43 @@ public class RecommendActivity extends AppCompatActivity {
                 final CurrentlyPlaying currentlyPlaying = response.body();
 
                 try {
-                    currentSong.setText(currentlyPlaying.getItem().getName());
-                    currentArtist.setText(currentlyPlaying.getItem().getArtists().get(0).getName());
+                    if(currentlyPlaying.getIsPlaying()) {
+                        currentSong.setText(currentlyPlaying.getItem().getName());
+                        currentArtist.setText(currentlyPlaying.getItem().getArtists().get(0).getName());
 
-                    Glide.with(getApplicationContext()).load(currentlyPlaying.getItem().getAlbum().getImages().get(0).getUrl()).into(albumCover);
+                        Glide.with(getApplicationContext()).load(currentlyPlaying.getItem().getAlbum().getImages().get(0).getUrl()).into(albumCover);
 
-                    seed_map = new HashMap<String, Object>() {{
-                        put("seed_tracks", currentlyPlaying.getItem().getId());
-                    }};
+                        seed_map = new HashMap<String, Object>() {{
+                            put("seed_tracks", currentlyPlaying.getItem().getId());
+                        }};
 
-                    try {
-                        for (int i = 0; i < 20; i++) {
-                            String val = new GetRecommendations().execute().get();
+                        try {
+                            for (int i = 0; i < 20; i++) {
+                                String val = new GetRecommendations().execute().get();
+                            }
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                            Log.d("error retrieving recs", e.getMessage());
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                            Log.d("error retrieving recs", e.getMessage());
                         }
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                        Log.d("error retrieving recs", e.getMessage());
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        Log.d("error retrieving recs", e.getMessage());
-                    }
 
-                    for(Recommendations r : allRecs)
-                    {
-                        Log.d("rec", r.tracks.get(0).name);
-                    }
-
-                    RecListAdapter adapter = new RecListAdapter(allRecs, getApplicationContext());
-                    recSongs.setAdapter(adapter);
-                    recSongs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            newSong(allRecs.get(position).tracks.get(position).id);
+                        for (Recommendations r : allRecs) {
+                            Log.d("rec", r.tracks.get(0).name);
                         }
-                    });
+
+                        RecListAdapter adapter = new RecListAdapter(allRecs, getApplicationContext());
+                        recSongs.setAdapter(adapter);
+                        recSongs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                newSong(allRecs.get(position).tracks.get(position).id);
+                            }
+                        });
+                    } else {
+                        setContentView(R.layout.nothing_playing_layout);
+                    }
 
                 } catch (NullPointerException e) {
                     setContentView(R.layout.nothing_playing_layout);
@@ -277,9 +280,9 @@ public class RecommendActivity extends AppCompatActivity {
         for(int i = 0; i < allRecs.size(); i++)
         {
             if(i < allRecs.size()-1)
-                song_list += "spotify:track:"+allRecs.get(i).tracks.get(0).id + ",";
+                song_list += "spotify:track:"+allRecs.get(i).tracks.get(i).id + ",";
             else
-                song_list += "spotify:track:"+allRecs.get(i).tracks.get(0).id;
+                song_list += "spotify:track:"+allRecs.get(i).tracks.get(i).id;
         }
 
         Playlist u = spotify_service.createPlaylist(user_id, put_name);
