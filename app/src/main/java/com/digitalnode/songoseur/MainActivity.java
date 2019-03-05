@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static AuthenticationResponse global_auth_response;
 
+    public static String USER_ID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         AuthenticationRequest.Builder builder =
                 new AuthenticationRequest.Builder(CLIENT_ID, AuthenticationResponse.Type.TOKEN, REDIRECT_URI);
 
-        builder.setScopes(new String[]{"streaming", "user-read-private", "user-read-currently-playing"});
+        builder.setScopes(new String[]{"streaming", "user-read-private", "user-read-currently-playing", "playlist-modify-public"});
         AuthenticationRequest request = builder.build();
 
         AuthenticationClient.openLoginActivity(this, REQUEST_CODE, request);
@@ -88,6 +90,14 @@ public class MainActivity extends AppCompatActivity {
 
                     global_auth_response = response;
 
+                    try {
+                        USER_ID = new GetUserInfo().execute().get();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     startActivity(RecommendActivity.makeIntent(MainActivity.this));
 
                     //List<Tracks> recommendations = spotify.getRecommendations(//).tracks;
@@ -103,6 +113,22 @@ public class MainActivity extends AppCompatActivity {
                 default:
                     // Handle other cases
             }
+        }
+    }
+
+    private class GetUserInfo extends AsyncTask<Void, Void, String> {
+        @Override
+        protected String doInBackground(Void... params) {
+            SpotifyApi api = new SpotifyApi();
+
+            api.setAccessToken(global_auth_response.getAccessToken());
+
+            SpotifyService spotify = api.getService();
+
+            String id = spotify.getMe().id;
+
+
+            return id;
         }
     }
 

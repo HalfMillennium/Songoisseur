@@ -10,10 +10,11 @@
 
     <TextView
         android:id="@+id/song_name"
-        android:layout_width="163dp"
+        android:layout_width="147dp"
         android:layout_height="24dp"
         android:layout_marginStart="20dp"
         android:layout_marginLeft="20dp"
+        android:ellipsize="end"
         android:fontFamily="@font/proxima_nova_thin_italic"
         android:maxLines="1"
         android:text="Carino"
@@ -25,14 +26,15 @@
 
     <TextView
         android:id="@+id/artist"
-        android:layout_width="165dp"
+        android:layout_width="147dp"
         android:layout_height="24dp"
         android:layout_marginRight="8dp"
+        android:ellipsize="end"
         android:fontFamily="@font/proxima_nova_bold"
-        android:scrollHorizontally="true"
-        android:text="The Marias"
         android:gravity="right"
         android:maxLines="1"
+        android:scrollHorizontally="true"
+        android:text="The Marias"
         android:textColor="@color/normGray"
         app:layout_constraintBottom_toBottomOf="@+id/song_name"
         app:layout_constraintEnd_toEndOf="parent"

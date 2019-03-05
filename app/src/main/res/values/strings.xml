@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Songoisseur</string>
     <string name="nothing_playing">There doesn\'t seem to be anything playing. Play a song to get recommendations!</string>
+    <string name="export_playlist">EXPORT RECOMMENDATIONS</string>
+    <string name="playlist_name_hint">My New Music #1</string>
 </resources>

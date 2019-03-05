@@ -1,7 +1,10 @@
 package com.digitalnode.songoseur;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +12,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -31,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Playlist;
 import kaaes.spotify.webapi.android.models.Recommendations;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -42,6 +48,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RecommendActivity extends AppCompatActivity {
+
+    public static String user_id;
 
     private ImageView albumCover;
     private TextView currentSong, currentArtist;
@@ -57,12 +65,17 @@ public class RecommendActivity extends AppCompatActivity {
     private static final String REDIRECT_URI = "https://github.com/HalfMillennium/Songoisseur";
     private SpotifyAppRemote mSpotifyAppRemote;
 
+    private Dialog myDialog;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.loading_screen_layout);
+        myDialog = new Dialog(this);
 
         setUp(MainActivity.global_auth_response);
+
+        user_id = MainActivity.USER_ID;
     }
 
     private class GetRecommendations extends AsyncTask<Void, Void, String> {
@@ -72,7 +85,13 @@ public class RecommendActivity extends AppCompatActivity {
             boolean present = false;
             for(int i = 0; i < allRecs.size(); i++)
             {
-                if(allRecs.get(i).tracks.get(0).name.equals(rec.tracks.get(0).name)) {
+                String artist1 = allRecs.get(i).tracks.get(0).artists.get(0).name;
+                String artist2 = rec.tracks.get(0).artists.get(0).name;
+
+                String song1 = allRecs.get(i).tracks.get(0).name;
+                String song2 = rec.tracks.get(0).name;
+
+                if((artist1 + song1).equals(artist2 + song2)) {
                     present = true;
                     Log.d("duplicate", allRecs.get(i).tracks.get(0).name);
                 }
@@ -80,7 +99,7 @@ public class RecommendActivity extends AppCompatActivity {
 
             if(!present)
                 allRecs.add(rec);
-            return "meetog";
+            return "goteem";
         }
     }
 
@@ -214,6 +233,74 @@ public class RecommendActivity extends AppCompatActivity {
     public void tryCurrentlyPlaying(View view)
     {
         startActivity(Intent.makeRestartActivityTask(RecommendActivity.this.getIntent().getComponent()));
+    }
+
+    public void showDialog(View view)
+    {
+        final EditText name;
+        Button btnCreate, btnCancel;
+        myDialog.setContentView(R.layout.name_playlist_dialog);
+        btnCancel = myDialog.findViewById(R.id.cancel_button);
+        btnCreate = myDialog.findViewById(R.id.create_button);
+        name = myDialog.findViewById(R.id.name);
+
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myDialog.dismiss();
+            }
+        });
+        btnCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(name.getText().toString().equals(""))
+                {
+                    Toast.makeText(RecommendActivity.this, "You need to give your playlist a name!", Toast.LENGTH_SHORT).show();
+                } else {
+                    new MakeNewPlaylist().execute(name.getText().toString());
+                    myDialog.dismiss();
+                    Toast.makeText(RecommendActivity.this, "'" + name.getText().toString() + "'" + " created successfully!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        myDialog.show();
+    }
+
+    public void makeSpotifyPlaylist(String name)
+    {
+        //playlist created
+        Map<String, Object> put_name = new HashMap<>();
+        put_name.put("name", name);
+
+        String song_list = "";
+        for(int i = 0; i < allRecs.size(); i++)
+        {
+            if(i < allRecs.size()-1)
+                song_list += "spotify:track:"+allRecs.get(i).tracks.get(0).id + ",";
+            else
+                song_list += "spotify:track:"+allRecs.get(i).tracks.get(0).id;
+        }
+
+        Playlist u = spotify_service.createPlaylist(user_id, put_name);
+
+        //songs added
+        Map<String, Object> put_songs = new HashMap<>();
+        put_songs.put("uris", song_list);
+
+        //body is required
+        Map<String, Object> empty_body = new HashMap<>();
+
+        spotify_service.addTracksToPlaylist(user_id, u.id, put_songs, empty_body);
+    }
+
+    private class MakeNewPlaylist extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            makeSpotifyPlaylist(params[0]);
+
+            return null;
+        }
     }
 
     public static Intent makeIntent(Context context) { return new Intent(context, RecommendActivity.class); }
