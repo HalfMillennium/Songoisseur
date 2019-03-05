@@ -68,12 +68,18 @@ public class RecommendActivity extends AppCompatActivity {
     private class GetRecommendations extends AsyncTask<Void, Void, String> {
         @Override
         protected String doInBackground(Void... params) {
-            Recommendations recs = spotify_service.getRecommendations(seed_map);
-            if(!allRecs.contains(recs)) {
-                allRecs.add(recs);
-            } else {
-                Log.d(recs.tracks.get(0).name, recs.tracks.get(0).artists.get(0).name);
+            Recommendations rec = spotify_service.getRecommendations(seed_map);
+            boolean present = false;
+            for(int i = 0; i < allRecs.size(); i++)
+            {
+                if(allRecs.get(i).tracks.get(0).name.equals(rec.tracks.get(0).name)) {
+                    present = true;
+                    Log.d("duplicate", allRecs.get(i).tracks.get(0).name);
+                }
             }
+
+            if(!present)
+                allRecs.add(rec);
             return "meetog";
         }
     }
@@ -145,6 +151,11 @@ public class RecommendActivity extends AppCompatActivity {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                         Log.d("error retrieving recs", e.getMessage());
+                    }
+
+                    for(Recommendations r : allRecs)
+                    {
+                        Log.d("rec", r.tracks.get(0).name);
                     }
 
                     RecListAdapter adapter = new RecListAdapter(allRecs, getApplicationContext());
