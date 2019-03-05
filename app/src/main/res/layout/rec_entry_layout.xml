@@ -12,15 +12,16 @@
         android:id="@+id/song_name"
         android:layout_width="163dp"
         android:layout_height="24dp"
+        android:layout_marginStart="20dp"
         android:layout_marginLeft="20dp"
         android:fontFamily="@font/proxima_nova_thin_italic"
-        android:text="Carino"
         android:maxLines="1"
+        android:text="Carino"
         android:textColor="#ffffff"
         app:layout_constraintBottom_toBottomOf="@+id/album_cover"
         app:layout_constraintStart_toEndOf="@+id/album_cover"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.684" />
+        app:layout_constraintVertical_bias="0.557" />
 
     <TextView
         android:id="@+id/artist"
@@ -43,8 +44,8 @@
 
     <ImageView
         android:id="@+id/album_cover"
-        android:layout_width="55dp"
-        android:layout_height="55dp"
+        android:layout_width="87dp"
+        android:layout_height="85dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@tools:sample/avatars" />
